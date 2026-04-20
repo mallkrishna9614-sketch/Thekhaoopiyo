@@ -1,0 +1,21 @@
+[
+  {
+    "id": "CHAT-sess_1776683196316",
+    "sessionId": "sess_1776683196316",
+    "customerName": "Test User",
+    "messages": [
+      {
+        "role": "waiter",
+        "text": "Namaste! 🙏 Welcome to The Khao Piyo Café. I'm your virtual waiter. How can I help you today?",
+        "time": "04:36 PM"
+      },
+      {
+        "role": "user",
+        "text": "What are today's specials?",
+        "time": "04:36 PM"
+      }
+    ],
+    "status": "open",
+    "createdAt": "2026-04-20T11:06:57.119Z"
+  }
+]
