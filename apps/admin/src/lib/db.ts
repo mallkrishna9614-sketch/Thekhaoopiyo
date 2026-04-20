@@ -1,4 +1,11 @@
-import { kv } from '@vercel/kv';
+import { createClient } from '@vercel/kv';
+
+// Automatically detect if user used KV_ or STORAGE_ prefix in Vercel
+const kv = createClient({
+  url: process.env.KV_URL || process.env.STORAGE_URL,
+  restApiUrl: process.env.KV_REST_API_URL || process.env.STORAGE_REST_API_URL,
+  restApiToken: process.env.KV_REST_API_TOKEN || process.env.STORAGE_REST_API_TOKEN,
+});
 
 async function readJson<T>(filename: string, defaultVal: T): Promise<T> {
   try {
