@@ -1,24 +1,45 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createHmac } from "crypto";
 
 const SESSION_SECRET = process.env.SESSION_SECRET ?? "khao-piyo-secret-change-in-prod";
 const COOKIE_NAME = "kp_admin_session";
 const LOGIN_PATH = "/login";
 
-function verifySessionToken(token: string): boolean {
+async function verifySessionToken(token: string): Promise<boolean> {
   try {
     const decoded = Buffer.from(token, "base64url").toString("utf8");
     const lastColon = decoded.lastIndexOf(":");
+    if (lastColon === -1) return false;
+    
     const payload = decoded.slice(0, lastColon);
-    const sig = decoded.slice(lastColon + 1);
-    const expected = createHmac("sha256", SESSION_SECRET).update(payload).digest("hex");
-    return sig === expected;
+    const sigHex = decoded.slice(lastColon + 1);
+
+    const encoder = new TextEncoder();
+    const key = await crypto.subtle.importKey(
+      "raw",
+      encoder.encode(SESSION_SECRET),
+      { name: "HMAC", hash: "SHA-256" },
+      false,
+      ["sign", "verify"]
+    );
+    
+    const signatureBuffer = await crypto.subtle.sign(
+      "HMAC",
+      key,
+      encoder.encode(payload)
+    );
+    
+    const expectedHex = Array.from(new Uint8Array(signatureBuffer))
+      .map((b) => b.toString(16).padStart(2, "0"))
+      .join("");
+      
+    // Using subtle.verify or just comparing hex is fine. Hex comparison is simpler here.
+    return sigHex === expectedHex;
   } catch {
     return false;
   }
 }
 
-export function middleware(req: NextRequest) {
+export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
   // Always allow: the login page and auth API routes
@@ -33,7 +54,7 @@ export function middleware(req: NextRequest) {
 
   const token = req.cookies.get(COOKIE_NAME)?.value;
 
-  if (!token || !verifySessionToken(token)) {
+  if (!token || !(await verifySessionToken(token))) {
     const loginUrl = req.nextUrl.clone();
     loginUrl.pathname = LOGIN_PATH;
     return NextResponse.redirect(loginUrl);

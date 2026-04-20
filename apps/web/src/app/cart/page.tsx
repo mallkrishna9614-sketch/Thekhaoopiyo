@@ -43,14 +43,14 @@ export default function CartPage() {
     setPromoInput("");
   };
 
-  const hasPizza = cart.some((c) => {
+  const suggestionIds = Array.from(new Set(cart.flatMap(c => {
     const item = menuItems.find((m) => m.id === c.id);
-    return item?.category === "pizza";
-  });
-
-  const suggestions = hasPizza
-    ? menuItems.filter((m) => m.category === "burgers" || m.category === "starters" || m.category === "drinks").slice(0, 2)
-    : [];
+    return item?.suggestions || [];
+  })));
+  
+  const suggestions = menuItems
+    .filter(m => suggestionIds.includes(m.id) && !cart.some(c => c.id === m.id))
+    .slice(0, 4);
 
   const placeOrder = async () => {
     if (!user) {
@@ -165,7 +165,7 @@ export default function CartPage() {
           {/* Suggestions */}
           {suggestions.length > 0 && (
             <div className="mt-8 pt-8 border-t border-[#1A0A00]/10">
-              <p className="text-[#C84B11] font-semibold text-sm uppercase tracking-widest mb-1">Pairs nicely with Pizza</p>
+              <p className="text-[#C84B11] font-semibold text-sm uppercase tracking-widest mb-1">Recommended Pairings</p>
               <h2 className="font-['Playfair_Display'] text-2xl font-bold text-[#1A0A00] mb-4">You might also like</h2>
               <div className="grid sm:grid-cols-2 gap-4">
                 {suggestions.map((item) => {

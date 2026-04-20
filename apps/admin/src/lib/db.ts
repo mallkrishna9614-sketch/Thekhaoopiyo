@@ -1,25 +1,21 @@
-import fs from "fs/promises";
-import path from "path";
-
-const DATA_DIR = path.join(process.cwd(), "src", "data");
-
-async function ensureDir() {
-  await fs.mkdir(DATA_DIR, { recursive: true });
-}
+import { kv } from '@vercel/kv';
 
 async function readJson<T>(filename: string, defaultVal: T): Promise<T> {
-  await ensureDir();
   try {
-    const raw = await fs.readFile(path.join(DATA_DIR, filename), "utf-8");
-    return JSON.parse(raw) as T;
-  } catch {
+    const data = await kv.get<T>(filename);
+    return data ?? defaultVal;
+  } catch (error) {
+    console.warn(`Failed to read ${filename} from KV, using default`, error);
     return defaultVal;
   }
 }
 
 async function writeJson<T>(filename: string, data: T): Promise<void> {
-  await ensureDir();
-  await fs.writeFile(path.join(DATA_DIR, filename), JSON.stringify(data, null, 2));
+  try {
+    await kv.set(filename, data);
+  } catch (error) {
+    console.error(`Failed to write ${filename} to KV`, error);
+  }
 }
 
 // ─── Orders ────────────────────────────────────────────────────────────────
@@ -153,3 +149,23 @@ export async function updateRefund(id: string, update: Partial<RefundRequest>): 
     await writeJson("refunds.json", all);
   }
 }
+
+// ─── Logins ────────────────────────────────────────────────────────────────
+
+export interface LoginRecord {
+  id: string;
+  email: string;
+  userAgent: string;
+  createdAt: string;
+}
+
+export async function getLogins(): Promise<LoginRecord[]> {
+  return readJson<LoginRecord[]>("logins.json", []);
+}
+
+export async function addLogin(record: LoginRecord): Promise<void> {
+  const all = await getLogins();
+  all.unshift(record);
+  await writeJson("logins.json", all);
+}
+

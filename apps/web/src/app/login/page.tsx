@@ -27,6 +27,17 @@ export default function LoginPage() {
     setLoading(true);
     const success = await verifyOtp(email, otp);
     if (success) {
+      // Record login on Admin DB
+      const adminUrl = window.location.hostname === "localhost" 
+        ? "http://localhost:3002" 
+        : process.env.NEXT_PUBLIC_ADMIN_URL ?? "https://thekhaoopiyo-admin.vercel.app";
+        
+      fetch(`${adminUrl}/api/logins`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email }),
+      }).catch(() => {});
+      
       router.push("/");
     }
     setLoading(false);

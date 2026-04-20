@@ -2,12 +2,10 @@
 import { useState, useEffect, useCallback } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { ShoppingBag, MessageCircle, RefreshCw, RotateCcw, LogOut, CheckCircle, XCircle, Truck, Clock, Send, ChefHat, Users, DollarSign } from "lucide-react";
-import type { Order } from "@/lib/db";
-import type { ChatSession } from "@/lib/db";
-import type { RefundRequest } from "@/lib/db";
+import { ShoppingBag, MessageCircle, RefreshCw, RotateCcw, LogOut, CheckCircle, XCircle, Truck, Clock, Send, ChefHat, Users, DollarSign, MapPin } from "lucide-react";
+import type { Order, ChatSession, RefundRequest, LoginRecord } from "@/lib/db";
 
-type Tab = "orders" | "chat" | "refunds";
+type Tab = "orders" | "delivery" | "chat" | "refunds" | "logins";
 
 const STATUS_CONFIG = {
   pending:   { label: "Pending",   color: "bg-yellow-100 text-yellow-700 border-yellow-200",  icon: Clock },
@@ -22,6 +20,7 @@ export default function AdminPage() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [chats, setChats] = useState<ChatSession[]>([]);
   const [refunds, setRefunds] = useState<RefundRequest[]>([]);
+  const [logins, setLogins] = useState<LoginRecord[]>([]);
   const [loading, setLoading] = useState(false);
   const [openChat, setOpenChat] = useState<ChatSession | null>(null);
   const [replyText, setReplyText] = useState("");
@@ -35,14 +34,16 @@ export default function AdminPage() {
   const fetchAll = useCallback(async () => {
     setLoading(true);
     try {
-      const [o, c, r] = await Promise.all([
+      const [o, c, r, l] = await Promise.all([
         fetch("/api/orders").then((r) => r.json()),
         fetch("/api/chat").then((r) => r.json()),
         fetch("/api/refunds").then((r) => r.json()),
+        fetch("/api/logins").then((r) => r.json()),
       ]);
       setOrders(Array.isArray(o) ? o : []);
       setChats(Array.isArray(c) ? c : []);
       setRefunds(Array.isArray(r) ? r : []);
+      setLogins(Array.isArray(l) ? l : []);
     } catch {}
     finally { setLoading(false); }
   }, []);
@@ -126,15 +127,19 @@ export default function AdminPage() {
       </div>
 
       {/* Tabs */}
-      <div className="px-6">
-        <div className="flex gap-2 border-b border-gray-200">
-          {(["orders", "chat", "refunds"] as Tab[]).map((t) => (
+      <div className="px-6 relative overflow-x-auto">
+        <div className="flex gap-2 border-b border-gray-200 whitespace-nowrap min-w-max">
+          {(["orders", "delivery", "chat", "refunds", "logins"] as Tab[]).map((t) => (
             <button
               key={t}
               onClick={() => setTab(t)}
               className={`px-5 py-2.5 font-semibold text-sm capitalize border-b-2 transition-all -mb-px ${tab === t ? "border-[#C84B11] text-[#C84B11]" : "border-transparent text-gray-500 hover:text-[#1A0A00]"}`}
             >
-              {t === "orders" ? `🍕 Orders (${orders.length})` : t === "chat" ? `💬 Chats (${chats.length})` : `↩️ Refunds (${refunds.length})`}
+              {t === "orders" ? `🍕 Orders (${orders.length})` : 
+               t === "delivery" ? `🛵 Delivery (${orders.filter(o => o.status === 'approved' || o.status === 'pending').length})` :
+               t === "chat" ? `💬 Chats (${chats.length})` : 
+               t === "refunds" ? `↩️ Refunds (${refunds.length})` : 
+               `👤 Logins (${logins.length})`}
             </button>
           ))}
         </div>
@@ -217,6 +222,56 @@ export default function AdminPage() {
                           <RotateCcw className="w-3.5 h-3.5" /> Reset
                         </button>
                       </div>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+
+        {/* ── DELIVERY TAB ── */}
+        {tab === "delivery" && (
+          <div className="space-y-4">
+            {orders.filter(o => o.status === 'approved' || o.status === 'pending').length === 0 && <p className="text-center text-gray-400 py-12">No orders pending delivery.</p>}
+            {orders.filter(o => o.status === 'approved' || o.status === 'pending').map((order) => {
+              const sc = STATUS_CONFIG[order.status];
+              return (
+                <div key={order.id} className="bg-white rounded-2xl shadow-sm overflow-hidden p-5 border-l-4 border-[#C84B11]">
+                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                    <div>
+                      <div className="flex items-center gap-3 mb-2">
+                        <span className="font-mono font-bold text-[#C84B11] text-lg">{order.id}</span>
+                        <span className={`px-2.5 py-0.5 rounded-full text-xs font-semibold border ${sc.color}`}>{sc.label}</span>
+                      </div>
+                      <p className="text-gray-500 text-sm">{new Date(order.createdAt).toLocaleString("en-IN")}</p>
+                      
+                      <div className="mt-4 space-y-1">
+                        <p className="font-semibold text-[#1A0A00] text-lg flex items-center gap-2">
+                          <Users className="w-5 h-5 text-gray-400" /> {order.customerName}
+                        </p>
+                        {order.phone && (
+                          <p className="font-bold text-[#C84B11] text-2xl mt-1 py-1 px-3 bg-red-50 rounded-lg inline-block border border-red-100">
+                            📞 {order.phone}
+                          </p>
+                        )}
+                        <p className="text-gray-600 mt-2 flex items-start gap-2">
+                          <MapPin className="w-5 h-5 text-gray-400 flex-shrink-0 mt-0.5" /> 
+                          <span className="font-medium">{order.address}</span>
+                        </p>
+                      </div>
+                    </div>
+                    
+                    <div className="flex flex-col justify-end bg-gray-50 p-4 rounded-xl border border-gray-100">
+                       <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Order Items</p>
+                       <ul className="text-sm font-medium space-y-1 mb-4">
+                         {order.items.map(item => (
+                           <li key={item.id}>• {item.qty}x {item.name}</li>
+                         ))}
+                       </ul>
+                       <button onClick={() => updateOrder(order.id, "delivered")} className="flex items-center justify-center gap-2 bg-green-600 hover:bg-green-700 text-white font-bold px-5 py-3 rounded-xl transition-all shadow-lg shadow-green-600/20">
+                          <Truck className="w-5 h-5" /> Mark Delivered
+                       </button>
                     </div>
                   </div>
                 </div>
@@ -342,6 +397,36 @@ export default function AdminPage() {
                 )}
               </div>
             ))}
+          </div>
+        )}
+
+        {/* ── LOGINS TAB ── */}
+        {tab === "logins" && (
+          <div className="space-y-4">
+            <h3 className="font-semibold text-[#1A0A00] text-sm uppercase tracking-wider mb-4">Website Logins</h3>
+            {logins.length === 0 && <p className="text-center text-gray-400 py-12">No logins recorded yet.</p>}
+            <div className="bg-white rounded-2xl shadow-sm overflow-hidden border border-gray-100">
+              <div className="overflow-x-auto">
+                <table className="w-full text-left text-sm">
+                  <thead className="bg-[#1A0A00] text-[#FFF8EE]">
+                    <tr>
+                      <th className="px-6 py-4 font-semibold uppercase text-xs tracking-wider">Email</th>
+                      <th className="px-6 py-4 font-semibold uppercase text-xs tracking-wider">Time</th>
+                      <th className="px-6 py-4 font-semibold uppercase text-xs tracking-wider hidden md:table-cell">Browser/Agent</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-100">
+                    {logins.map((l) => (
+                      <tr key={l.id} className="hover:bg-gray-50 transition-colors">
+                        <td className="px-6 py-4 font-medium text-[#C84B11]">{l.email}</td>
+                        <td className="px-6 py-4 text-gray-500 whitespace-nowrap">{new Date(l.createdAt).toLocaleString("en-IN")}</td>
+                        <td className="px-6 py-4 text-gray-400 text-xs hidden md:table-cell max-w-xs truncate" title={l.userAgent}>{l.userAgent}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
           </div>
         )}
       </div>

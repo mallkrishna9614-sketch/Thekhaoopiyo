@@ -6,6 +6,7 @@ export interface MenuItem {
   isVeg: boolean;
   description: string;
   image: string;
+  suggestions?: string[];
 }
 
 export const menuItems: MenuItem[] = [
@@ -17,6 +18,7 @@ export const menuItems: MenuItem[] = [
     isVeg: true,
     description: "Signature pizza served in a clay kuhlad — loaded with fresh veggies, mozzarella, and house-made tomato sauce.",
     image: "https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=600&q=80",
+    suggestions: ["mojito", "loaded-nachos"],
   },
   {
     id: "bbq-chicken-pizza",
@@ -26,6 +28,7 @@ export const menuItems: MenuItem[] = [
     isVeg: false,
     description: "Smoky BBQ base with tender grilled chicken, caramelized onions, and melted cheese on a crispy crust.",
     image: "https://images.unsplash.com/photo-1574071318508-1cdbab80d002?w=600&q=80",
+    suggestions: ["cold-coffee", "chilli-chicken"],
   },
   {
     id: "chicken-burger",
@@ -35,6 +38,7 @@ export const menuItems: MenuItem[] = [
     isVeg: false,
     description: "Juicy grilled chicken patty with lettuce, tomato, pickles, and our signature café sauce in a toasted bun.",
     image: "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=600&q=80",
+    suggestions: ["cold-coffee", "mojito"],
   },
   {
     id: "veg-wrap",
@@ -44,6 +48,7 @@ export const menuItems: MenuItem[] = [
     isVeg: true,
     description: "Crispy veggies, paneer, fresh greens, and tangy mint chutney wrapped in a soft whole-wheat tortilla.",
     image: "https://images.unsplash.com/photo-1626700051175-6818013e1d4f?w=600&q=80",
+    suggestions: ["paneer-tikka", "blue-lagoon"],
   },
   {
     id: "chicken-wrap",
@@ -53,6 +58,7 @@ export const menuItems: MenuItem[] = [
     isVeg: false,
     description: "Grilled chicken strips, crunchy slaw, jalapeños, and chipotle mayo in a warm flour tortilla.",
     image: "https://images.unsplash.com/photo-1626700051175-6818013e1d4f?q=80&w=600",
+    suggestions: ["mojito", "loaded-nachos"],
   },
   {
     id: "mojito",
@@ -62,6 +68,7 @@ export const menuItems: MenuItem[] = [
     isVeg: true,
     description: "Refreshing mint-lime mojito with crushed ice, sugar syrup, and a hint of soda — our bestseller.",
     image: "https://images.unsplash.com/photo-1551538827-9c037cb4f32a?w=600&q=80",
+    suggestions: ["veg-wrap", "kuhlad-pizza"],
   },
   {
     id: "cold-coffee",
@@ -71,6 +78,7 @@ export const menuItems: MenuItem[] = [
     isVeg: true,
     description: "Rich blended cold coffee made with premium espresso, chilled milk, and topped with whipped cream.",
     image: "https://images.unsplash.com/photo-1461023058943-07fcbe16d735?w=600&q=80",
+    suggestions: ["chicken-burger", "mac-and-cheese"],
   },
   {
     id: "blue-lagoon",
@@ -80,6 +88,7 @@ export const menuItems: MenuItem[] = [
     isVeg: true,
     description: "Stunning electric-blue mocktail with lemon, ice cream soda, and a splash of blue curacao syrup.",
     image: "/items/blue-lagoon.jpg",
+    suggestions: ["bbq-chicken-pizza", "paneer-tikka"],
   },
   {
     id: "paneer-tikka",
@@ -89,6 +98,7 @@ export const menuItems: MenuItem[] = [
     isVeg: true,
     description: "Marinated cottage cheese cubes grilled to perfection with bell peppers, onions, and aromatic spices.",
     image: "https://images.unsplash.com/photo-1567188040759-fb8a883dc6d8?w=600&q=80",
+    suggestions: ["blue-lagoon", "veg-wrap"],
   },
   {
     id: "loaded-nachos",
@@ -98,6 +108,7 @@ export const menuItems: MenuItem[] = [
     isVeg: true,
     description: "Crispy corn tortilla chips piled high with melted cheese, jalapeños, salsa, and sour cream.",
     image: "https://images.unsplash.com/photo-1513456852971-30c0b8199d4d?w=600&q=80",
+    suggestions: ["mojito", "kuhlad-pizza"],
   },
   {
     id: "mac-and-cheese",
@@ -107,6 +118,7 @@ export const menuItems: MenuItem[] = [
     isVeg: true,
     description: "Creamy four-cheese macaroni pasta baked golden — the ultimate comfort food in a cast iron skillet.",
     image: "https://images.unsplash.com/photo-1543352634-a1c51d9f1fa7?w=600&q=80",
+    suggestions: ["cold-coffee", "chicken-wrap"],
   },
   {
     id: "chilli-chicken",
@@ -116,6 +128,7 @@ export const menuItems: MenuItem[] = [
     isVeg: false,
     description: "Wok-tossed crispy chicken with green chillies, capsicum, ginger-garlic, and dark soya sauce glaze.",
     image: "https://images.unsplash.com/photo-1569050467447-ce54b3bbc37d?w=600&q=80",
+    suggestions: ["blue-lagoon", "bbq-chicken-pizza"],
   },
 ];
 
