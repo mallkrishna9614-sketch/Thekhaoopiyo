@@ -6,7 +6,7 @@ import type { Order } from "@/lib/db";
 import type { ChatSession } from "@/lib/db";
 import type { RefundRequest } from "@/lib/db";
 
-const ADMIN_PASSWORD = "KhaoAdmin2024";
+const ADMIN_PASSWORD = "9305196173";
 
 type Tab = "orders" | "chat" | "refunds";
 
@@ -127,7 +127,7 @@ export default function AdminPage() {
           <button onClick={login} className="w-full bg-[#C84B11] text-white font-bold py-3 rounded-xl hover:bg-[#a83d0e] transition-all">
             Sign In
           </button>
-          <p className="text-center text-xs text-[#1A0A00]/30 mt-4">Hint: KhaoAdmin2024</p>
+
         </div>
       </div>
     );
