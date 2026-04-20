@@ -10,8 +10,8 @@ import authRoutes from './routes/auth.routes';
 const app = express();
 const port = process.env.PORT || 8080;
 
-app.use(helmet());
-app.use(cors());
+app.use(cors({ origin: "*" }));
+app.use(helmet({ crossOriginResourcePolicy: { policy: "cross-origin" } }));
 app.use(express.json());
 
 // API Safety: Rate Limiting
