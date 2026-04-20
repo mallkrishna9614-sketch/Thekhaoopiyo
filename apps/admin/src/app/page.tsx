@@ -1,12 +1,11 @@
 "use client";
 import { useState, useEffect, useCallback } from "react";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import { ShoppingBag, MessageCircle, RefreshCw, RotateCcw, LogOut, CheckCircle, XCircle, Truck, Clock, Send, ChefHat, Users, DollarSign } from "lucide-react";
 import type { Order } from "@/lib/db";
 import type { ChatSession } from "@/lib/db";
 import type { RefundRequest } from "@/lib/db";
-
-const ADMIN_PASSWORD = "9305196173";
 
 type Tab = "orders" | "chat" | "refunds";
 
@@ -18,9 +17,7 @@ const STATUS_CONFIG = {
 };
 
 export default function AdminPage() {
-  const [authed, setAuthed] = useState(false);
-  const [pw, setPw] = useState("");
-  const [pwError, setPwError] = useState(false);
+  const router = useRouter();
   const [tab, setTab] = useState<Tab>("orders");
   const [orders, setOrders] = useState<Order[]>([]);
   const [chats, setChats] = useState<ChatSession[]>([]);
@@ -30,23 +27,9 @@ export default function AdminPage() {
   const [replyText, setReplyText] = useState("");
   const [orderNote, setOrderNote] = useState<Record<string, string>>({});
 
-  useEffect(() => {
-    if (typeof window !== "undefined" && localStorage.getItem("kp_admin") === "1") setAuthed(true);
-  }, []);
-
-  const login = () => {
-    if (pw === ADMIN_PASSWORD) {
-      setAuthed(true);
-      localStorage.setItem("kp_admin", "1");
-    } else {
-      setPwError(true);
-      setTimeout(() => setPwError(false), 2000);
-    }
-  };
-
-  const logout = () => {
-    setAuthed(false);
-    localStorage.removeItem("kp_admin");
+  const logout = async () => {
+    await fetch("/api/auth/logout", { method: "POST" });
+    router.push("/login");
   };
 
   const fetchAll = useCallback(async () => {
@@ -64,7 +47,7 @@ export default function AdminPage() {
     finally { setLoading(false); }
   }, []);
 
-  useEffect(() => { if (authed) fetchAll(); }, [authed, fetchAll]);
+  useEffect(() => { fetchAll(); }, [fetchAll]);
 
   const updateOrder = async (id: string, status: Order["status"]) => {
     await fetch(`/api/orders/${id}`, {
@@ -103,35 +86,6 @@ export default function AdminPage() {
     openChats: chats.filter((c) => c.status === "open").length,
   };
 
-  // ── Login ──────────────────────────────────────────────────────────
-  if (!authed) {
-    return (
-      <div className="min-h-screen bg-[#1A0A00] flex items-center justify-center px-4">
-        <div className="bg-white rounded-3xl shadow-2xl p-8 max-w-sm w-full">
-          <div className="text-center mb-6">
-            <div className="w-16 h-16 bg-[#1A0A00] rounded-2xl flex items-center justify-center mx-auto mb-4">
-              <ChefHat className="w-8 h-8 text-[#E8A020]" />
-            </div>
-            <h2 className="font-['Playfair_Display'] text-2xl font-bold text-[#1A0A00]">Admin Login</h2>
-            <p className="text-[#1A0A00]/50 text-sm mt-1">The Khao Piyo Café</p>
-          </div>
-          <input
-            type="password"
-            value={pw}
-            onChange={(e) => setPw(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && login()}
-            placeholder="Enter admin password"
-            className={`w-full border-2 rounded-xl px-4 py-3 mb-4 outline-none transition-colors ${pwError ? "border-red-400 shake" : "border-[#1A0A00]/20 focus:border-[#C84B11]"}`}
-          />
-          {pwError && <p className="text-red-500 text-sm mb-3 text-center">Incorrect password</p>}
-          <button onClick={login} className="w-full bg-[#C84B11] text-white font-bold py-3 rounded-xl hover:bg-[#a83d0e] transition-all">
-            Sign In
-          </button>
-
-        </div>
-      </div>
-    );
-  }
 
   // ── Dashboard ──────────────────────────────────────────────────────
   return (
